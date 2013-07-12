@@ -90,6 +90,14 @@ public class X509CertificateGenerator {
 	/** This holds the private key of the CA used to sign the new certificate. The object is created in the constructor. */
 	private RSAPrivateCrtKeyParameters caPrivateKey;
 	
+	public RSAPrivateCrtKeyParameters getCaPrivateKey() {
+		return caPrivateKey;
+	}
+
+	public void setCaPrivateKey(RSAPrivateCrtKeyParameters caPrivateKey) {
+		this.caPrivateKey = caPrivateKey;
+	}
+
 	private boolean useBCAPI;
 	
 	public X509CertificateGenerator(String caFile, String caPassword, String caAlias, boolean useBCAPI) 

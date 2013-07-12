@@ -10,6 +10,7 @@
 <div id='cssmenu'>
 <ul>
    <li class='active'><a href='Crypto'><span>Génération de certificats</span></a></li>
+    <li><a href='CRLgen'><span>Génération de la CRL</span></a></li>
    <li class='last'><a href='#'><span>Contact</span></a></li>
 </ul>
 </div>
