@@ -19,8 +19,10 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.Provider;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.Security;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
@@ -34,7 +36,6 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.commons.codec.binary.Hex;
-import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -83,9 +84,7 @@ import org.bouncycastle.x509.extension.SubjectKeyIdentifierStructure;
  * @author Rene Mayrhofer
  */
 public class X509CertificateGenerator {
-	/** Our log4j logger. */
-	private static Logger logger = Logger.getLogger(X509CertificateGenerator.class);
-	
+
 	/** This holds the certificate of the CA used to sign the new certificate. The object is created in the constructor. */
 	private X509Certificate caCert;
 	/** This holds the private key of the CA used to sign the new certificate. The object is created in the constructor. */
@@ -97,11 +96,11 @@ public class X509CertificateGenerator {
 			throws KeyStoreException, NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException, UnrecoverableKeyException, InvalidKeyException, NoSuchProviderException, SignatureException {
 		this.useBCAPI = useBCAPI;
 		
-		logger.info("Loading CA certificate and private key from file '" + caFile + "', using alias '" + caAlias + "' with "
+		System.out.println("Loading CA certificate and private key from file '" + caFile + "', using alias '" + caAlias + "' with "
 				+ (this.useBCAPI ? "Bouncycastle lightweight API" : "JCE API"));
 		KeyStore caKs = KeyStore.getInstance("PKCS12");
 		caKs.load(new FileInputStream(new File(caFile)), caPassword.toCharArray());
-		
+
 		// load the key entry from the keystore
 		Key key = caKs.getKey(caAlias, caPassword.toCharArray());
 		if (key == null) {
@@ -115,32 +114,32 @@ public class X509CertificateGenerator {
 		if (caCert == null) {
 			throw new RuntimeException("Got null cert from keystore!"); 
 		}
-		logger.debug("Successfully loaded CA key and certificate. CA DN is '" + caCert.getSubjectDN().getName() + "'");
+		System.out.println("Successfully loaded CA key and certificate. CA DN is '" + caCert.getSubjectDN().getName() + "'");
 		caCert.verify(caCert.getPublicKey());
-		logger.debug("Successfully verified CA certificate with its own public key.");
+		System.out.println("Successfully verified CA certificate with its own public key.");
 	}
 	
 	public boolean createCertificate(String dn, int validityDays, String exportFile, String exportPassword) throws 
 			IOException, InvalidKeyException, SecurityException, SignatureException, NoSuchAlgorithmException, DataLengthException, CryptoException, KeyStoreException, NoSuchProviderException, CertificateException, InvalidKeySpecException {
-		logger.info("Generating certificate for distinguished subject name '" + 
+		System.out.println("Generating certificate for distinguished subject name '" + 
 				dn + "', valid for " + validityDays + " days");
 		SecureRandom sr = new SecureRandom();
 		
 		PublicKey pubKey;
 		PrivateKey privKey;
 		
-		logger.debug("Creating RSA keypair");
+		System.out.println("Creating RSA keypair");
 		// generate the keypair for the new certificate
 		if (useBCAPI) {
 			RSAKeyPairGenerator gen = new RSAKeyPairGenerator();
 			gen.init(new RSAKeyGenerationParameters(BigInteger.valueOf(3), sr, 1024, 80));
 			AsymmetricCipherKeyPair keypair = gen.generateKeyPair();
-			logger.debug("Generated keypair, extracting components and creating public structure for certificate");
+			System.out.println("Generated keypair, extracting components and creating public structure for certificate");
 			RSAKeyParameters publicKey = (RSAKeyParameters) keypair.getPublic();
 			RSAPrivateCrtKeyParameters privateKey = (RSAPrivateCrtKeyParameters) keypair.getPrivate();
 			// used to get proper encoding for the certificate
 			RSAPublicKeyStructure pkStruct = new RSAPublicKeyStructure(publicKey.getModulus(), publicKey.getExponent());
-			logger.debug("New public key is '" + new String(Hex.encodeHex(pkStruct.getEncoded())) + 
+			System.out.println("New public key is '" + new String(Hex.encodeHex(pkStruct.getEncoded())) + 
 					", exponent=" + publicKey.getExponent() + ", modulus=" + publicKey.getModulus());
 			// JCE format needed for the certificate - because getEncoded() is necessary...
 	        pubKey = KeyFactory.getInstance("RSA").generatePublic(
@@ -177,7 +176,7 @@ public class X509CertificateGenerator {
 		certGen.setStartDate(new Time(new Date(System.currentTimeMillis())));
 		certGen.setEndDate(new Time(expiry.getTime()));
 		
-		logger.debug("Certificate structure generated, creating SHA1 digest");
+		System.out.println("Certificate structure generated, creating SHA1 digest");
 		// attention: hard coded to be SHA1+RSA!
 		SHA1Digest digester = new SHA1Digest();
 		AsymmetricBlockCipher rsa = new PKCS1Encoding(new RSAEngine());
@@ -192,7 +191,7 @@ public class X509CertificateGenerator {
 		if (useBCAPI) {
 			byte[] certBlock = bOut.toByteArray();
 			// first create digest
-			logger.debug("Block to sign is '" + new String(Hex.encodeHex(certBlock)) + "'");		
+			System.out.println("Block to sign is '" + new String(Hex.encodeHex(certBlock)) + "'");		
 			digester.update(certBlock, 0, certBlock.length);
 			byte[] hash = new byte[digester.getDigestSize()];
 			digester.doFinal(hash, 0);
@@ -214,7 +213,7 @@ public class X509CertificateGenerator {
 	        sig.update(bOut.toByteArray());
 	        signature = sig.sign();
 		}
-		logger.debug("SHA1/RSA signature of digest is '" + new String(Hex.encodeHex(signature)) + "'");
+		System.out.println("SHA1/RSA signature of digest is '" + new String(Hex.encodeHex(signature)) + "'");
 
 		// and finally construct the certificate structure
         ASN1EncodableVector  v = new ASN1EncodableVector();
@@ -224,11 +223,11 @@ public class X509CertificateGenerator {
         v.add(new DERBitString(signature));
 
         X509CertificateObject clientCert = new X509CertificateObject(new X509CertificateStructure(new DERSequence(v))); 
-        logger.debug("Verifying certificate for correct signature with CA public key");
+        System.out.println("Verifying certificate for correct signature with CA public key");
         clientCert.verify(caCert.getPublicKey());
 
         // and export as PKCS12 formatted file along with the private key and the CA certificate 
-        logger.debug("Exporting certificate in PKCS12 format");
+        System.out.println("Exporting certificate in PKCS12 format");
 
         PKCS12BagAttributeCarrier bagCert = clientCert;
         bagCert.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName,
