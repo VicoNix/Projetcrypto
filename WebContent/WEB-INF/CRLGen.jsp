@@ -9,7 +9,7 @@
 <body>
     <%@ include file="Header.jsp"%>
 <h2 align="center"><br><br>Génération de CRL<br><br></h2>
-<form action="Crypto" method="POST">
+<form action="CRLGen" method="POST">
 		
 		<br>
 		<br>

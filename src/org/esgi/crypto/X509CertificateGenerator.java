@@ -75,21 +75,22 @@ import org.bouncycastle.jce.provider.X509CertificateObject;
 import org.esgi.crypto.*;
 import org.bouncycastle.x509.extension.SubjectKeyIdentifierStructure;
 
-/** This class uses the Bouncycastle lightweight API to generate X.509 certificates programmatically.
- * It assumes a CA certificate and its private key to be available and can sign the new certificate with
- * this CA. Some of the code for this class was taken from 
- * org.bouncycastle.x509.X509V3CertificateGenerator, but adapted to work with the lightweight API instead of
- * JCE (which is usually not available on MIDP2.0). 
- * 
- * @author Rene Mayrhofer
- */
+
 public class X509CertificateGenerator {
 
-	/** This holds the certificate of the CA used to sign the new certificate. The object is created in the constructor. */
 	private X509Certificate caCert;
-	/** This holds the private key of the CA used to sign the new certificate. The object is created in the constructor. */
 	private RSAPrivateCrtKeyParameters caPrivateKey;
+	private KeyStore caKs;
 	
+	
+	public KeyStore getCaKs() {
+		return caKs;
+	}
+
+	public void setCaKs(KeyStore caKs) {
+		this.caKs = caKs;
+	}
+
 	public RSAPrivateCrtKeyParameters getCaPrivateKey() {
 		return caPrivateKey;
 	}
@@ -104,40 +105,39 @@ public class X509CertificateGenerator {
 			throws KeyStoreException, NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException, UnrecoverableKeyException, InvalidKeyException, NoSuchProviderException, SignatureException {
 		this.useBCAPI = useBCAPI;
 		
-		System.out.println("Loading CA certificate and private key from file '" + caFile + "', using alias '" + caAlias + "' with "
+		System.out.println("Chargement du certificat et de la clé privée du fichier '" + caFile + "', en utilisant l'alias '" + caAlias + "' avec "
 				+ (this.useBCAPI ? "Bouncycastle lightweight API" : "JCE API"));
 		KeyStore caKs = KeyStore.getInstance("PKCS12");
 		caKs.load(new FileInputStream(new File(caFile)), caPassword.toCharArray());
 
-		// load the key entry from the keystore
 		Key key = caKs.getKey(caAlias, caPassword.toCharArray());
 		if (key == null) {
-			throw new RuntimeException("Got null key from keystore!"); 
+			throw new RuntimeException("Keystore vide !"); 
 		}
 		RSAPrivateCrtKey privKey = (RSAPrivateCrtKey) key;
 		caPrivateKey = new RSAPrivateCrtKeyParameters(privKey.getModulus(), privKey.getPublicExponent(), privKey.getPrivateExponent(),
 				privKey.getPrimeP(), privKey.getPrimeQ(), privKey.getPrimeExponentP(), privKey.getPrimeExponentQ(), privKey.getCrtCoefficient());
-		// and get the certificate
+
 		caCert = (X509Certificate) caKs.getCertificate(caAlias);
 		if (caCert == null) {
-			throw new RuntimeException("Got null cert from keystore!"); 
+			throw new RuntimeException("Certificat vide !"); 
 		}
-		System.out.println("Successfully loaded CA key and certificate. CA DN is '" + caCert.getSubjectDN().getName() + "'");
+		System.out.println("clé privée et certificat chargé DN= '" + caCert.getSubjectDN().getName() + "'");
 		caCert.verify(caCert.getPublicKey());
-		System.out.println("Successfully verified CA certificate with its own public key.");
+		System.out.println("Certificat vérifié avec sa clé publique");
 	}
 	
 	public boolean createCertificate(String dn, int validityDays, String exportFile, String exportPassword) throws 
 			IOException, InvalidKeyException, SecurityException, SignatureException, NoSuchAlgorithmException, DataLengthException, CryptoException, KeyStoreException, NoSuchProviderException, CertificateException, InvalidKeySpecException {
-		System.out.println("Generating certificate for distinguished subject name '" + 
-				dn + "', valid for " + validityDays + " days");
+		System.out.println("Génération de certificat pour DN = '" + 
+				dn + "', valide pour " + validityDays + " jours");
 		SecureRandom sr = new SecureRandom();
 		
 		PublicKey pubKey;
 		PrivateKey privKey;
 		
-		System.out.println("Creating RSA keypair");
-		// generate the keypair for the new certificate
+		System.out.println("Creation de la paire de clé RSA");
+		// genere la paire de clé
 		if (useBCAPI) {
 			RSAKeyPairGenerator gen = new RSAKeyPairGenerator();
 			gen.init(new RSAKeyGenerationParameters(BigInteger.valueOf(3), sr, 1024, 80));

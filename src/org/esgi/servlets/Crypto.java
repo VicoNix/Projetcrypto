@@ -1,4 +1,4 @@
-package org.esgi.crypto;
+package org.esgi.servlets;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.bouncycastle.crypto.CryptoException;
 import org.bouncycastle.crypto.DataLengthException;
+import org.esgi.crypto.X509CertificateGenerator;
 
 
 /**
@@ -64,7 +65,8 @@ public class Crypto extends HttpServlet {
 			out.print("<script>alert('Veuillez rensignez un nombre de jours correct !')</script>");
 		}
 		try {
-			if(new X509CertificateGenerator(getServletContext().getRealPath("/")+"certificat.p12", "toto", "webmail.monsite.fr", false).createCertificate((String) request.getParameter("dn"), days, filepath, (String) request.getParameter("password")))
+			X509CertificateGenerator cg = new X509CertificateGenerator(getServletContext().getRealPath("/")+"certificat.p12", "toto", "webmail.monsite.fr", false);
+			if(cg.createCertificate((String) request.getParameter("dn"), days, filepath, (String) request.getParameter("password")))
 			{
 				 File fi = new File(filepath);
 	             response.setContentType("application/octet-stream" );
@@ -84,42 +86,42 @@ public class Crypto extends HttpServlet {
 			else
 			{
 				ServletOutputStream out = response.getOutputStream();
-				out.print("<script>alert('Paramètres non valides !')</script>");
+				out.print("<script>alert('Paramï¿½tres non valides !')</script>");
 			}
 		
 		
 		} catch (InvalidKeyException e) {
-			// TODO Bloc catch généré automatiquement
+			// TODO Bloc catch gï¿½nï¿½rï¿½ automatiquement
 			e.printStackTrace();
 		} catch (DataLengthException e) {
-			// TODO Bloc catch généré automatiquement
+			// TODO Bloc catch gï¿½nï¿½rï¿½ automatiquement
 			e.printStackTrace();
 		} catch (UnrecoverableKeyException e) {
-			// TODO Bloc catch généré automatiquement
+			// TODO Bloc catch gï¿½nï¿½rï¿½ automatiquement
 			e.printStackTrace();
 		} catch (SecurityException e) {
-			// TODO Bloc catch généré automatiquement
+			// TODO Bloc catch gï¿½nï¿½rï¿½ automatiquement
 			e.printStackTrace();
 		} catch (SignatureException e) {
-			// TODO Bloc catch généré automatiquement
+			// TODO Bloc catch gï¿½nï¿½rï¿½ automatiquement
 			e.printStackTrace();
 		} catch (NoSuchAlgorithmException e) {
-			// TODO Bloc catch généré automatiquement
+			// TODO Bloc catch gï¿½nï¿½rï¿½ automatiquement
 			e.printStackTrace();
 		} catch (KeyStoreException e) {
-			// TODO Bloc catch généré automatiquement
+			// TODO Bloc catch gï¿½nï¿½rï¿½ automatiquement
 			e.printStackTrace();
 		} catch (NoSuchProviderException e) {
-			// TODO Bloc catch généré automatiquement
+			// TODO Bloc catch gï¿½nï¿½rï¿½ automatiquement
 			e.printStackTrace();
 		} catch (CertificateException e) {
-			// TODO Bloc catch généré automatiquement
+			// TODO Bloc catch gï¿½nï¿½rï¿½ automatiquement
 			e.printStackTrace();
 		} catch (InvalidKeySpecException e) {
-			// TODO Bloc catch généré automatiquement
+			// TODO Bloc catch gï¿½nï¿½rï¿½ automatiquement
 			e.printStackTrace();
 		} catch (CryptoException e) {
-			// TODO Bloc catch généré automatiquement
+			// TODO Bloc catch gï¿½nï¿½rï¿½ automatiquement
 			e.printStackTrace();
 		}
 		//this.getServletContext().getRequestDispatcher( "/WEB-INF/Crypto.jsp" ).forward( request, response );
