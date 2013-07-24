@@ -21,6 +21,9 @@
 <h2 align="center"><br><br>Génération de CRL<br><br></h2>
 <form action="CRLGen" method="POST">
 		
+		<ul>
+		<%out.print(request.getAttribute("crl")); %>
+		</ul>
 		<br>
 		<br>
 		 <br>

@@ -34,20 +34,88 @@ import org.esgi.crypto.CRLManager;
 @WebServlet("/CRLGen")
 public class CRLGen extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
+       private CRLManager crlM;
     /**
      * @see HttpServlet#HttpServlet()
      */
     public CRLGen() {
         super();
-        // TODO Auto-generated constructor stub
+       try {
+		crlM=new CRLManager();
+		//Certificat à révoquer
+	        
+	} catch (InvalidKeyException e) {
+		// TODO Bloc catch généré automatiquement
+		e.printStackTrace();
+	} catch (KeyStoreException e) {
+		// TODO Bloc catch généré automatiquement
+		e.printStackTrace();
+	} catch (NoSuchAlgorithmException e) {
+		// TODO Bloc catch généré automatiquement
+		e.printStackTrace();
+	} catch (CertificateException e) {
+		// TODO Bloc catch généré automatiquement
+		e.printStackTrace();
+	} catch (NoSuchProviderException e) {
+		// TODO Bloc catch généré automatiquement
+		e.printStackTrace();
+	} catch (SignatureException e) {
+		// TODO Bloc catch généré automatiquement
+		e.printStackTrace();
+	} catch (CRLException e) {
+		// TODO Bloc catch généré automatiquement
+		e.printStackTrace();
+	} catch (IOException e) {
+		// TODO Bloc catch généré automatiquement
+		e.printStackTrace();
+	}
+       
     }
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		CertificateFactory cf;
+		try {
+			crlM.createCRL(getServletContext().getRealPath("/")+"certificat.p12", "toto", "webmail.monsite.fr", "webmail.monsite.fr", "toto");
+
+	        crlM.save(getServletContext().getRealPath("/")+"test.crl");
+
+
+			cf = CertificateFactory.getInstance("X.509");
+			X509Certificate generateCertificate = (X509Certificate) cf.generateCertificate(new FileInputStream(getServletContext().getRealPath("/")+"certonly.pem"));
+
+	        crlM.revoke(getServletContext().getRealPath("/")+"test.crl",generateCertificate, CRLReason.keyCompromise);
+
+		} catch (CertificateException e) {
+			// TODO Bloc catch généré automatiquement
+			e.printStackTrace();
+		} catch (InvalidKeyException e) {
+			// TODO Bloc catch généré automatiquement
+			e.printStackTrace();
+		} catch (NoSuchProviderException e) {
+			// TODO Bloc catch généré automatiquement
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			// TODO Bloc catch généré automatiquement
+			e.printStackTrace();
+		} catch (SignatureException e) {
+			// TODO Bloc catch généré automatiquement
+			e.printStackTrace();
+		} catch (CRLException e) {
+			// TODO Bloc catch généré automatiquement
+			e.printStackTrace();
+		} catch (KeyStoreException e) {
+			// TODO Bloc catch généré automatiquement
+			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Bloc catch généré automatiquement
+			e.printStackTrace();
+		}
+        
 		
+		request.setAttribute("crl", crlM.displayCrls());
        
 		this.getServletContext().getRequestDispatcher( "/WEB-INF/CRLGen.jsp" ).forward( request, response );
 
@@ -57,14 +125,8 @@ public class CRLGen extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		 CRLManager crlM;
-			try {
-				crlM = new CRLManager();
-				crlM.createCRL(getServletContext().getRealPath("/")+"certificat.p12", "toto", "webmail.monsite.fr", "webmail.monsite.fr", "toto");
 
-		        crlM.save(getServletContext().getRealPath("/")+"test.crl");
-
-
+				
 		        System.out.println("path="+getServletContext().getRealPath("/"));
 		            File fi = new File(getServletContext().getRealPath("/")+"test.crl");
 		             response.setContentType("application/octet-stream" );
@@ -79,39 +141,7 @@ public class CRLGen extends HttpServlet {
 		             }
 		             
 		             fif.close();
-		             out1.close();
-		             
-		 	        //Certificat à révoquer
-		 	        CertificateFactory cf = CertificateFactory.getInstance("X.509");
-		 	        X509Certificate generateCertificate = (X509Certificate) cf.generateCertificate(new FileInputStream(getServletContext().getRealPath("/")+"certonly.pem"));
-		 	               
-		 	        crlM.revoke(getServletContext().getRealPath("/")+"test.crl",generateCertificate, CRLReason.keyCompromise);
-
-		        
-			} catch (InvalidKeyException e) {
-				// TODO Bloc catch généré automatiquement
-				e.printStackTrace();
-			} catch (KeyStoreException e) {
-				// TODO Bloc catch généré automatiquement
-				e.printStackTrace();
-			} catch (NoSuchAlgorithmException e) {
-				// TODO Bloc catch généré automatiquement
-				e.printStackTrace();
-			} catch (CertificateException e) {
-				// TODO Bloc catch généré automatiquement
-				e.printStackTrace();
-			} catch (NoSuchProviderException e) {
-				// TODO Bloc catch généré automatiquement
-				e.printStackTrace();
-			} catch (SignatureException e) {
-				// TODO Bloc catch généré automatiquement
-				e.printStackTrace();
-			} catch (CRLException e) {
-				// TODO Bloc catch généré automatiquement
-				e.printStackTrace();
-			}
-
-	        
+		             out1.close(); 
 	}
 
 }

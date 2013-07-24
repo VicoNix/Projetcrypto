@@ -47,7 +47,33 @@ public class CRLManager {
     private X509Certificate caCrlCert;
     private PrivateKey caCrlPrivateKey;
 
+    /**
+     * Affiche l'ensemble des certificats rÃ©voquÃ©s
+     */
+    public String displayCrls() {
+    	String texte="";
+        Set crlSet = crl.getRevokedCertificates();
+        Iterator iter = crlSet.iterator();
+        while (iter.hasNext()) {
+            X509CRLEntry entry = (X509CRLEntry) iter.next();
+            texte+= "<li/>"+displayCrl(entry);
+        }
+        return texte;
+    }
 
+    /**
+     * Affiche les informations d'un certificat rÃ©voquÃ©
+     * @param entry : le certificat dont on affiche les informations
+     */
+    public static String displayCrl(X509CRLEntry entry) {
+    	String texte="";
+        texte+="Le certificat avec le numéro de série #";
+        texte+=entry.getSerialNumber();
+        texte+=" a été révoqué le ";
+        texte+=entry.getRevocationDate();
+		return texte;
+    }
+    
     public void createCRL(String keystore, String password, String certificateAlias, String keyAlias, String passKey) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, NoSuchProviderException, InvalidKeyException, SignatureException {
         crlGen = new X509V2CRLGenerator();
         Security.addProvider(new BouncyCastleProvider());
@@ -99,6 +125,7 @@ public class CRLManager {
         Calendar cal = new GregorianCalendar();
         Date now = cal.getTime();
         cal.add(Calendar.YEAR, 1);
+        System.out.println(cert.getSerialNumber());
         crlGen.addCRLEntry(cert.getSerialNumber(), now, reason);
 
         try {
