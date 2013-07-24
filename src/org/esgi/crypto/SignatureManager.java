@@ -83,7 +83,7 @@ public class SignatureManager {
 
 	        } catch (Exception e) {
 
-	            System.err.println("Caught exception " + e.toString());
+	            System.err.println(e.toString());
 	        }
 	        return verifies;
 	    }

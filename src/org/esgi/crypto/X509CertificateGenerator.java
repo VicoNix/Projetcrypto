@@ -19,10 +19,8 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
-import java.security.Provider;
 import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.Security;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
@@ -104,12 +102,10 @@ public class X509CertificateGenerator {
 	public X509CertificateGenerator(String caFile, String caPassword, String caAlias, boolean useBCAPI) 
 			throws KeyStoreException, NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException, UnrecoverableKeyException, InvalidKeyException, NoSuchProviderException, SignatureException {
 		this.useBCAPI = useBCAPI;
-		
-		System.out.println("Chargement du certificat et de la clé privée du fichier '" + caFile + "', en utilisant l'alias '" + caAlias + "' avec "
-				+ (this.useBCAPI ? "Bouncycastle lightweight API" : "JCE API"));
 		KeyStore caKs = KeyStore.getInstance("PKCS12");
+		//chargement du certificat root
 		caKs.load(new FileInputStream(new File(caFile)), caPassword.toCharArray());
-
+		//récupère la clé privée correspondant à l'alias
 		Key key = caKs.getKey(caAlias, caPassword.toCharArray());
 		if (key == null) {
 			throw new RuntimeException("Keystore vide !"); 
@@ -122,15 +118,11 @@ public class X509CertificateGenerator {
 		if (caCert == null) {
 			throw new RuntimeException("Certificat vide !"); 
 		}
-		System.out.println("clé privée et certificat chargé DN= '" + caCert.getSubjectDN().getName() + "'");
-		caCert.verify(caCert.getPublicKey());
-		System.out.println("Certificat vérifié avec sa clé publique");
 	}
 	
-	public boolean createCertificate(String dn, int validityDays, String exportFile, String exportPassword) throws 
+	public boolean createCertificate(String mail, String country,String dn, int validityDays, String exportFile, String exportPassword) throws 
 			IOException, InvalidKeyException, SecurityException, SignatureException, NoSuchAlgorithmException, DataLengthException, CryptoException, KeyStoreException, NoSuchProviderException, CertificateException, InvalidKeySpecException {
-		System.out.println("Génération de certificat pour DN = '" + 
-				dn + "', valide pour " + validityDays + " jours");
+
 		SecureRandom sr = new SecureRandom();
 		
 		PublicKey pubKey;
@@ -142,24 +134,21 @@ public class X509CertificateGenerator {
 			RSAKeyPairGenerator gen = new RSAKeyPairGenerator();
 			gen.init(new RSAKeyGenerationParameters(BigInteger.valueOf(3), sr, 1024, 80));
 			AsymmetricCipherKeyPair keypair = gen.generateKeyPair();
-			System.out.println("Generated keypair, extracting components and creating public structure for certificate");
 			RSAKeyParameters publicKey = (RSAKeyParameters) keypair.getPublic();
 			RSAPrivateCrtKeyParameters privateKey = (RSAPrivateCrtKeyParameters) keypair.getPrivate();
 			// used to get proper encoding for the certificate
 			RSAPublicKeyStructure pkStruct = new RSAPublicKeyStructure(publicKey.getModulus(), publicKey.getExponent());
-			System.out.println("New public key is '" + new String(Hex.encodeHex(pkStruct.getEncoded())) + 
-					", exponent=" + publicKey.getExponent() + ", modulus=" + publicKey.getModulus());
-			// JCE format needed for the certificate - because getEncoded() is necessary...
+			
+			
 	        pubKey = KeyFactory.getInstance("RSA").generatePublic(
 	        		new RSAPublicKeySpec(publicKey.getModulus(), publicKey.getExponent()));
-	        // and this one for the KeyStore
+	        // keystore
 	        privKey = KeyFactory.getInstance("RSA").generatePrivate(
 	        		new RSAPrivateCrtKeySpec(publicKey.getModulus(), publicKey.getExponent(),
 	        				privateKey.getExponent(), privateKey.getP(), privateKey.getQ(), 
 	        				privateKey.getDP(), privateKey.getDQ(), privateKey.getQInv()));
 		}
 		else {
-			// this is the JSSE way of key generation
 			KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
 			keyGen.initialize(1024, sr);
 			KeyPair keypair = keyGen.generateKeyPair();
@@ -170,12 +159,13 @@ public class X509CertificateGenerator {
 		Calendar expiry = Calendar.getInstance();
 		expiry.add(Calendar.DAY_OF_YEAR, validityDays);
  
-		X509Name x509Name = new X509Name("CN=" + dn);
+		X509Name x509Name = new X509Name("CN=" + dn+", C="+country+", E="+mail);
 
 		V3TBSCertificateGenerator certGen = new V3TBSCertificateGenerator();
 	    certGen.setSerialNumber(new DERInteger(BigInteger.valueOf(System.currentTimeMillis())));
 		certGen.setIssuer(PrincipalUtil.getSubjectX509Principal(caCert));
 		certGen.setSubject(x509Name);
+		
 		DERObjectIdentifier sigOID = X509Util.getAlgorithmOID("SHA1WithRSAEncryption");
 		AlgorithmIdentifier sigAlgId = new AlgorithmIdentifier(sigOID, new DERNull());
 		certGen.setSignature(sigAlgId);
@@ -184,8 +174,6 @@ public class X509CertificateGenerator {
 		certGen.setStartDate(new Time(new Date(System.currentTimeMillis())));
 		certGen.setEndDate(new Time(expiry.getTime()));
 		
-		System.out.println("Certificate structure generated, creating SHA1 digest");
-		// attention: hard coded to be SHA1+RSA!
 		SHA1Digest digester = new SHA1Digest();
 		AsymmetricBlockCipher rsa = new PKCS1Encoding(new RSAEngine());
 		TBSCertificateStructure tbsCert = certGen.generateTBSCertificate();
@@ -194,23 +182,21 @@ public class X509CertificateGenerator {
 		DEROutputStream         dOut = new DEROutputStream(bOut);
 		dOut.writeObject(tbsCert);
 
-		// and now sign
+		// sign
 		byte[] signature;
 		if (useBCAPI) {
 			byte[] certBlock = bOut.toByteArray();
-			// first create digest
-			System.out.println("Block to sign is '" + new String(Hex.encodeHex(certBlock)) + "'");		
+			// premiere creation 	
 			digester.update(certBlock, 0, certBlock.length);
 			byte[] hash = new byte[digester.getDigestSize()];
 			digester.doFinal(hash, 0);
-			// and sign that
+			
 			rsa.init(true, caPrivateKey);
 			DigestInfo dInfo = new DigestInfo( new AlgorithmIdentifier(X509ObjectIdentifiers.id_SHA1, null), hash);
 			byte[] digest = dInfo.getEncoded(ASN1Encodable.DER);
 			signature = rsa.processBlock(digest, 0, digest.length);
 		}
 		else {
-			// or the JCE way
 	        PrivateKey caPrivKey = KeyFactory.getInstance("RSA").generatePrivate(
 	        		new RSAPrivateCrtKeySpec(caPrivateKey.getModulus(), caPrivateKey.getPublicExponent(),
 	        				caPrivateKey.getExponent(), caPrivateKey.getP(), caPrivateKey.getQ(), 
@@ -221,9 +207,7 @@ public class X509CertificateGenerator {
 	        sig.update(bOut.toByteArray());
 	        signature = sig.sign();
 		}
-		System.out.println("SHA1/RSA signature of digest is '" + new String(Hex.encodeHex(signature)) + "'");
 
-		// and finally construct the certificate structure
         ASN1EncodableVector  v = new ASN1EncodableVector();
 
         v.add(tbsCert);
@@ -231,12 +215,7 @@ public class X509CertificateGenerator {
         v.add(new DERBitString(signature));
 
         X509CertificateObject clientCert = new X509CertificateObject(new X509CertificateStructure(new DERSequence(v))); 
-        System.out.println("Verifying certificate for correct signature with CA public key");
         clientCert.verify(caCert.getPublicKey());
-
-        // and export as PKCS12 formatted file along with the private key and the CA certificate 
-        System.out.println("Exporting certificate in PKCS12 format");
-
         PKCS12BagAttributeCarrier bagCert = clientCert;
         bagCert.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName,
         		new DERBMPString("Certificate for IPSec WLAN access"));
@@ -249,7 +228,6 @@ public class X509CertificateGenerator {
         store.load(null, null);
 
         X509Certificate[] chain = new X509Certificate[2];
-        // first the client, then the CA certificate
         chain[0] = clientCert;
         chain[1] = caCert;
         
@@ -261,16 +239,6 @@ public class X509CertificateGenerator {
 		
         return true;
 	}
-	
-	/** The test CA can e.g. be created with
-	 * 
-	 * echo -e "AT\nUpper Austria\nSteyr\nMy Organization\nNetwork tests\nTest CA certificate\nme@myserver.com\n\n\n" | \
-	     openssl req -new -x509 -outform PEM -newkey rsa:2048 -nodes -keyout /tmp/ca.key -keyform PEM -out /tmp/ca.crt -days 365;
-	   echo "test password" | openssl pkcs12 -export -in /tmp/ca.crt -inkey /tmp/ca.key -out ca.p12 -name "Test CA" -passout stdin
-	 * 
-	 * The created certificate can be displayed with
-	 * 
-	 * openssl pkcs12 -nodes -info -in test.p12 > /tmp/test.cert && openssl x509 -noout -text -in /tmp/test.cert
-	 */
+
 	
 }

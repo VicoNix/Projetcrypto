@@ -146,6 +146,14 @@
 				<td>Nombre de jours de validité :</td>
 				<td><input name="validitydays" id="validitydays"></td>
 			</tr>
+						<tr>
+				<td>Pays</td>
+				<td><input name="country" id="country"></td>
+			</tr>
+			<tr>
+				<td>E-mail</td>
+				<td><input name="mail" id="mail"></td>
+			</tr>
 			<tr>
 			<td><input value="Générer un certificat" type="submit" onclick=""></td>
 			<td></td>

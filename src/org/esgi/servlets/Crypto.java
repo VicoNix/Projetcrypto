@@ -55,6 +55,9 @@ public class Crypto extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
 		String filepath=getServletContext().getRealPath("/")+"certgen.p12";
+		
+		String country=request.getParameter("country");
+		String mail=request.getParameter("mail");
 		int days = 0;
 		try{
 		days=Integer.parseInt(request.getParameter("validitydays"));
@@ -66,7 +69,7 @@ public class Crypto extends HttpServlet {
 		}
 		try {
 			X509CertificateGenerator cg = new X509CertificateGenerator(getServletContext().getRealPath("/")+"certificat.p12", "toto", "webmail.monsite.fr", false);
-			if(cg.createCertificate((String) request.getParameter("dn"), days, filepath, (String) request.getParameter("password")))
+			if(cg.createCertificate(mail,country,(String) request.getParameter("dn"), days, filepath, (String) request.getParameter("password")))
 			{
 				 File fi = new File(filepath);
 	             response.setContentType("application/octet-stream" );

@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.esgi.crypto;
 
 import java.io.File;
@@ -18,10 +14,6 @@ import java.security.SecureRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Classe permettant de gÃ©rer une clÃ© publique et une clÃ© privÃ©e
- * @author william.pastor
- */
 public class KeyPairManager {
 
     private String folder = "";
@@ -47,37 +39,23 @@ public class KeyPairManager {
         pair = keyGen.generateKeyPair();
     }
 
-    /**
-     * Sauvegarde la clÃ© dans un fichier
-     * @param filename : nom du fichier dans laquelle la clÃ© sera sauvegardÃ©e
-     */
+   // Sauvegarde clé public dans un fichier
     public void savePubKey(String filename) {
         saveKey(filename, pair.getPublic());
     }
 
-    /**
-     * Sauvegarde la clÃ© privÃ©e dans un fichier
-     * @param filename : nom dans laquelle la clÃ© sera sauvegardÃ©e'
-     */
+    // Sauvegarde clé privé dans fichier
     public void savePriKey(String filename) {
         saveKey(filename, pair.getPrivate());
     }
     
-    /**
-     * MÃ©thode gÃ©nÃ©rique pour sauvegarder une clÃ© dans un fichier
-     * @param filename : nom du fichier dans laquelle la clÃ© sera sauvegardÃ©e
-     * @param generalKey : clÃ© Ã  sauvegarder
-     */
+   // Save clé dans un fichier (generique)
     private void saveKey(String filename, Key generalKey) {
         FileOutputStream keyfos = null;
         try {
             /* save the public key in a file */
             byte[] key = generalKey.getEncoded();
             keyfos = new FileOutputStream(new File(folder + filename));
-//            ObjectOutputStream oos = new ObjectOutputStream(keyfos);
-//            oos.writeObject(priKey);
-//            oos.flush();
-//            oos.close();
             keyfos.write(key);
             keyfos.close();
         } catch (FileNotFoundException ex) {
