@@ -20,13 +20,14 @@
 </ul>
 </div>
     
-<h2 align="center"><br><br>Signer un certificat<br><br></h2>
-<form action="Crypto" method="POST">
+<h2 align="center"><br><br>Signer un fichier<br><br></h2>
+<form action="Sign" method="POST" enctype="multipart/form-data">
 		
 		<br>
 		<br>
 		 <br>
-		<input value="Générer un certificat" type="submit" onclick="">
+		<input type="file" value="Signer un fichier" >
+	<input type="submit" value="Signer un fichier">
 	</form>
 
 </body>

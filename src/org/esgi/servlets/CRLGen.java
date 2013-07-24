@@ -127,8 +127,6 @@ public class CRLGen extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-				
-		        System.out.println("path="+getServletContext().getRealPath("/"));
 		            File fi = new File(getServletContext().getRealPath("/")+"test.crl");
 		             response.setContentType("application/octet-stream" );
 		             response.setHeader("Content-Disposition","attachment; filename="+fi.getName()+";" );
