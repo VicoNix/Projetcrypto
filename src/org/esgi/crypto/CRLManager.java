@@ -23,6 +23,8 @@ import java.security.cert.CertificateParsingException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -82,10 +84,14 @@ public class CRLManager {
      */
     public static String displayCrl(X509CRLEntry entry) {
     	String texte="";
-        texte+="Le certificat avec le numéro de série #";
+        //texte+="Le certificat avec le numéro de série #";
+    	texte+="#";
         texte+=entry.getSerialNumber();
-        texte+=" a été révoqué le ";
-        texte+=entry.getRevocationDate();
+        //texte+=" a été révoqué le ";
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        String dat = dateFormat.format(entry.getRevocationDate());
+        texte+=" "+dat;
+        //texte+=entry.getRevocationDate();
 		return texte;
     }
     
