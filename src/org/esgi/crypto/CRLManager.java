@@ -3,7 +3,6 @@ package org.esgi.crypto;
 import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -20,19 +19,20 @@ import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CRLException;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
-import org.apache.commons.codec.binary.Base64;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.Set;
+
 import javax.security.auth.x500.X500Principal;
-import org.bouncycastle.asn1.x509.CRLReason;
+
+import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.x509.X509V2CRLGenerator;
 
@@ -50,7 +50,7 @@ public class CRLManager {
     /**
      * Affiche l'ensemble des certificats rÃ©voquÃ©s
      */
-    public String displayCrls() {
+    /*public String displayCrls() {
     	String texte="";
         Set crlSet = crl.getRevokedCertificates();
         Iterator iter = crlSet.iterator();
@@ -59,7 +59,23 @@ public class CRLManager {
             texte+= "<li/>"+displayCrl(entry);
         }
         return texte;
+    }*/
+    
+    
+    public ArrayList<String> displayCrls() {
+    	ArrayList<String>resultat = new ArrayList<String>();
+    	
+    	String texte="";
+        Set crlSet = crl.getRevokedCertificates();
+        Iterator iter = crlSet.iterator();
+        while (iter.hasNext()) {
+            X509CRLEntry entry = (X509CRLEntry) iter.next();
+            resultat.add(texte);
+            //texte+= "<li/>"+displayCrl(entry);
+        }
+        return resultat;
     }
+    
 
     /**
      * Affiche les informations d'un certificat rÃ©voquÃ©
