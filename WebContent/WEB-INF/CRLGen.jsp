@@ -1,3 +1,4 @@
+<%@page import="java.util.ArrayList"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
@@ -23,7 +24,14 @@
 <form action="CRLGen" method="POST">
 		
 		<ul>
-		<%out.print(request.getAttribute("crl")); %>
+		<%
+		java.util.ArrayList<String> crl = (java.util.ArrayList<String>)request.getAttribute("crl");
+		for(String certif : crl){
+			out.println("<li>");
+			out.println(certif);
+			out.println("</li>");
+		}
+		 %>
 		</ul>
 		<br>
 		<br>

@@ -70,8 +70,7 @@ public class CRLManager {
         Iterator iter = crlSet.iterator();
         while (iter.hasNext()) {
             X509CRLEntry entry = (X509CRLEntry) iter.next();
-            resultat.add(texte);
-            //texte+= "<li/>"+displayCrl(entry);
+            resultat.add(displayCrl(entry));
         }
         return resultat;
     }
