@@ -14,6 +14,7 @@
 <ul>
    <li class='first'><a href='Crypto'><span>Génération de certificats</span></a></li>
     <li class='active'><a href='CRLGen'><span>Génération de la CRL</span></a></li>
+        <li><a href='Sign'><span>Signer un fichier</span></a></li>
    <li class='last'><a href='#'><span>Contact</span></a></li>
 </ul>
 </div>

@@ -88,6 +88,7 @@ public class CRLGen extends HttpServlet {
 
 	        crlM.revoke(getServletContext().getRealPath("/")+"test.crl",generateCertificate, CRLReason.keyCompromise);
 
+	        
 		} catch (CertificateException e) {
 			// TODO Bloc catch généré automatiquement
 			e.printStackTrace();
