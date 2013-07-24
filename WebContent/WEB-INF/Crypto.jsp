@@ -8,6 +8,17 @@
 </head>
 <body>
     <%@ include file="Header.jsp"%>
+    
+    <link href="css/menu_assets/styles.css" rel="stylesheet" type="text/css">
+
+<div id='cssmenu'>
+<ul>
+   <li class='active'><a href='Crypto'><span>Génération de certificats</span></a></li>
+    <li><a href='CRLgen'><span>Génération de la CRL</span></a></li>
+   <li class='last'><a href='#'><span>Contact</span></a></li>
+</ul>
+</div>
+    
 <h2 align="center"><br><br>Génération de certificat<br><br></h2>
 <form action="Crypto" method="POST">
 		<table>

@@ -5,15 +5,7 @@
 
 <h1><p align="center">Infrastructure à clés publiques</p></h1>
 
-<link href="css/menu_assets/styles.css" rel="stylesheet" type="text/css">
 
-<div id='cssmenu'>
-<ul>
-   <li class='active'><a href='Crypto'><span>Génération de certificats</span></a></li>
-    <li><a href='CRLgen'><span>Génération de la CRL</span></a></li>
-   <li class='last'><a href='#'><span>Contact</span></a></li>
-</ul>
-</div>
 
 <style type="text/css">
 			BODY,

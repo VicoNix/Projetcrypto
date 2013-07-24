@@ -83,7 +83,7 @@ public class CRLGen extends HttpServlet {
 		             
 		 	        //Certificat à révoquer
 		 	        CertificateFactory cf = CertificateFactory.getInstance("X.509");
-		 	        X509Certificate generateCertificate = (X509Certificate) cf.generateCertificate(new FileInputStream(getServletContext().getRealPath("/")+"certgen.p12"));
+		 	        X509Certificate generateCertificate = (X509Certificate) cf.generateCertificate(new FileInputStream(getServletContext().getRealPath("/")+"certonly.pem"));
 		 	               
 		 	        crlM.revoke(getServletContext().getRealPath("/")+"test.crl",generateCertificate, CRLReason.keyCompromise);
 
